@@ -42,6 +42,7 @@ class screens
         uint8_t last_rssi;
         uint8_t best_rssi;
         uint8_t last_channel;
+        float voltage;
         void reset();
         void drawTitleBox(const char *title);
 
@@ -64,8 +65,8 @@ class screens
         // SCREEN SAVER
         void screenSaver(uint8_t channelName, uint16_t channelFrequency, const char *call_sign);
         void screenSaver(uint8_t diversity_mode, uint8_t channelName, uint16_t channelFrequency, const char *call_sign);
-        void updateScreenSaver(uint8_t rssi);
-        void updateScreenSaver(char active_receiver, uint8_t rssi, uint8_t rssiA, uint8_t rssiB); // diversity
+        void updateScreenSaver(uint8_t rssi, float voltage);
+        void updateScreenSaver(char active_receiver, uint8_t rssi, uint8_t rssiA, uint8_t rssiB, float voltage); // diversity
 
         // DIVERSITY
         void diversity(uint8_t diversity_mode);
