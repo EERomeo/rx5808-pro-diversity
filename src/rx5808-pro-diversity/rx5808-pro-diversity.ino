@@ -137,6 +137,10 @@ char call_sign[10];
 bool settings_beeps = true;
 bool settings_orderby_channel = true;
 
+int sum = 0;                    // sum of samples taken
+unsigned char sample_count = 0; // current sample number
+float voltage = 0.0;            // calculated voltage
+
 // SETUP ----------------------------------------------------------------------------
 void setup()
 {
@@ -520,8 +524,12 @@ void loop()
 
 #ifdef USE_DIVERSITY
             drawScreen.updateScreenSaver(active_receiver, rssi, readRSSI(useReceiverA), readRSSI(useReceiverB));
+
+            if((readRSSI(useReceiverA) < RSSI_ALARM) && (readRSSI(useReceiverB) < RSSI_ALARM)) { beep(300); } //rssi buzzer alarm
 #else
             drawScreen.updateScreenSaver(rssi);
+
+            if(rssi < RSSI_ALARM) { beep(300); } //rssi buzzer alarm
 #endif
 
         }
@@ -910,6 +918,22 @@ void loop()
 /*******************/
 /*   SUB ROUTINES  */
 /*******************/
+
+float readVoltage()
+{
+    while (sample_count < NUM_SAMPLES) {
+        sum += analogRead(voltagePin);
+        sample_count++;
+    }
+    voltage = ((float)sum / (float)NUM_SAMPLES * 5) / 1024.0;
+    sample_count = 0;
+    sum = 0;
+        if(voltage * V_CAL < V_MIN)
+    {
+        beep(100);
+    }
+    return voltage;
+}
 
 void beep(uint16_t time)
 {
