@@ -39,6 +39,13 @@ SOFTWARE.
 // Up to 10 letters
 #define CALL_SIGN "CALL SIGN"
 
+#define V_CAL 3.094         //Voltage calibration ((actual voltage/displayed voltage) * V_CAL)
+#define V_MIN 10.5          //Min Voltage alarm trigger
+#define NUM_SAMPLES 10      //voltage reading smoothing (do not change)
+#define RSSI_ALARM 1        //Min rssi alarm trigger (%) ! for diversity triggered if both rx's < alarm
+
+#define voltagePin A2       //Voltage divider input pin
+
 // Feature Togglels
 #define USE_DIVERSITY
 #define USE_IR_EMITTER
