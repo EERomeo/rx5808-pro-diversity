@@ -47,6 +47,8 @@ Adafruit_SSD1306 display(OLED_RESET);
     #error("Screen size incorrect, please fix Adafruit_SSD1306.h!");
 #endif
 
+unsigned int voltage_count = 0; // current voltage sample number
+
 screens::screens() {
     last_channel = -1;
     last_rssi = 0;
@@ -359,107 +361,88 @@ void screens::screenSaver(uint8_t diversity_mode, uint8_t channelName, uint16_t 
     reset();
     display.setTextSize(6);
     display.setTextColor(WHITE);
-    display.setCursor(0,0);
+    display.setCursor(5,0);
     display.print(channelName, HEX);
     display.setTextSize(1);
-    display.setCursor(70,0);
+    display.setCursor(75,0);
     display.print(call_sign);
     display.setTextSize(2);
-    display.setCursor(70,28);
+    display.setCursor(75,28);
     display.setTextColor(WHITE);
     display.print(channelFrequency);
     display.setTextSize(1);
 #ifdef USE_DIVERSITY
     if(isDiversity()) {
-        display.setCursor(70,18);
+        display.setCursor(75,18);
         switch(diversity_mode) {
             case useReceiverAuto:
                 display.print(PSTR2("AUTO"));
                 break;
             case useReceiverA:
-                display.print(PSTR2("ANTENNA A"));
+                display.print(PSTR2("Left Rx"));
                 break;
             case useReceiverB:
-                display.print(PSTR2("ANTENNA B"));
+                display.print(PSTR2("Right Rx"));
                 break;
         }
-        display.setTextColor(BLACK,WHITE);
-        display.fillRect(0, display.height()-19, 7, 9, WHITE);
-        display.setCursor(1,display.height()-18);
-        display.print("A");
-        display.setTextColor(BLACK,WHITE);
-        display.fillRect(0, display.height()-9, 7, 9, WHITE);
-        display.setCursor(1,display.height()-8);
-        display.print("B");
+    display.setCursor(0,0);
+    display.fillRect(0, 0, 4, display.height(), WHITE);
+    display.setCursor(124,0);
+    display.fillRect(124, 0, 4, display.height(), WHITE);
+    display.setTextSize(2);
+    display.setTextColor(WHITE);
+    
+    display.setCursor(5,display.height()-18);
+    display.print("L");
+    display.setTextColor(WHITE);
+    
+    display.setCursor(112,display.height()-18);
+    display.print("R");
     }
 #endif
     display.display();
 }
 
-void screens::updateScreenSaver(uint8_t rssi) {
-    updateScreenSaver(-1, rssi, -1, -1);
+void screens::updateScreenSaver(uint8_t rssi, float voltage) {
+    updateScreenSaver(-1, rssi, -1, -1, voltage);
 }
-void screens::updateScreenSaver(char active_receiver, uint8_t rssi, uint8_t rssiA, uint8_t rssiB) {
+void screens::updateScreenSaver(char active_receiver, uint8_t rssi, uint8_t rssiA, uint8_t rssiB, float voltage) {
 #ifdef USE_DIVERSITY
-    if(isDiversity()) {
-        // read rssi A
-        #define RSSI_BAR_SIZE 119
-        uint8_t rssi_scaled=map(rssiA, 1, 100, 3, RSSI_BAR_SIZE);
-        display.fillRect(7 + rssi_scaled, display.height()-19, (RSSI_BAR_SIZE-rssi_scaled), 9, BLACK);
-        if(active_receiver == useReceiverA)
-        {
-            display.fillRect(7, display.height()-19, rssi_scaled, 9, WHITE);
-        }
-        else
-        {
-            display.fillRect(7, display.height()-19, (RSSI_BAR_SIZE), 9, BLACK);
-            display.drawRect(7, display.height()-19, rssi_scaled, 9, WHITE);
-        }
+    // read rssi A
+    #define RSSI_BAR_SIZE display.height()
+    uint8_t rssi_scaled=map(rssiA, 1, 100, 3, RSSI_BAR_SIZE);
+    display.fillRect(0, 0, 4, RSSI_BAR_SIZE,WHITE);
+    display.fillRect(0, 0, 4, (RSSI_BAR_SIZE-rssi_scaled),BLACK);
+    
 
-        // read rssi B
-        rssi_scaled=map(rssiB, 1, 100, 3, RSSI_BAR_SIZE);
-        display.fillRect(7 + rssi_scaled, display.height()-9, (RSSI_BAR_SIZE-rssi_scaled), 9, BLACK);
-        if(active_receiver == useReceiverB)
-        {
-            display.fillRect(7, display.height()-9, rssi_scaled, 9, WHITE);
-        }
-        else
-        {
-            display.fillRect(7, display.height()-9, (RSSI_BAR_SIZE), 9, BLACK);
-            display.drawRect(7, display.height()-9, rssi_scaled, 9, WHITE);
-        }
-    }
-    else {
-        display.setTextColor(BLACK);
-        display.fillRect(0, display.height()-19, 25, 19, WHITE);
-        display.setCursor(1,display.height()-13);
-        display.print(PSTR2("RSSI"));
-        #define RSSI_BAR_SIZE 101
-        uint8_t rssi_scaled=map(rssi, 1, 100, 1, RSSI_BAR_SIZE);
-        display.fillRect(25 + rssi_scaled, display.height()-19, (RSSI_BAR_SIZE-rssi_scaled), 19, BLACK);
-        display.fillRect(25, display.height()-19, rssi_scaled, 19, WHITE);
-    }
+    // read rssi B
+    rssi_scaled=map(rssiB, 1, 100, 3, RSSI_BAR_SIZE);
+    display.fillRect(124, 0, 4, RSSI_BAR_SIZE,WHITE);
+    display.fillRect(124, 0, 4, (RSSI_BAR_SIZE-rssi_scaled),BLACK); 
 #else
     display.setTextColor(BLACK);
-    display.fillRect(0, display.height()-19, 25, 19, WHITE);
-    display.setCursor(1,display.height()-13);
+    display.fillRect(5, display.height()-19, 25, 19, WHITE);
+    display.setCursor(6,display.height()-13);
     display.print(PSTR2("RSSI"));
-    #define RSSI_BAR_SIZE 101
-    uint8_t rssi_scaled=map(rssi, 1, 100, 1, RSSI_BAR_SIZE);
-    display.fillRect(25 + rssi_scaled, display.height()-19, (RSSI_BAR_SIZE-rssi_scaled), 19, BLACK);
-    display.fillRect(25, display.height()-19, rssi_scaled, 19, WHITE);
+    
+    #define RSSI_BAR_SIZE display.height()
+    uint8_t rssi_scaled=map(rssi, 1, 100, 3, RSSI_BAR_SIZE);
+    display.fillRect(0, 0, 4, RSSI_BAR_SIZE,WHITE);
+    display.fillRect(0, 0, 4, (RSSI_BAR_SIZE-rssi_scaled),BLACK);
 #endif
-    if(rssi < 20)
-    {
-        display.setTextColor((millis()%250 < 125) ? WHITE : BLACK, BLACK);
-        display.setCursor(50,display.height()-13);
-        display.print(PSTR2("LOW SIGNAL"));
+    if(voltage_count < NUM_SAMPLES/10){
+      voltage_count++;
+    }else{
+    display.fillRect(33, display.height()-13, 70, 9, BLACK);
+    display.setTextColor(WHITE);
+    display.setTextSize(1);
+    display.setCursor(35, display.height()-13);
+    display.print("Vin ");
+    display.print(voltage * V_CAL);
+    display.print("v");
+    voltage_count = 0;
     }
-#ifdef USE_DIVERSITY
-    else if(isDiversity()) {
-        display.drawLine(50,display.height()-10,110,display.height()-10,BLACK);
-    }
-#endif
+
     display.display();
 }
 
@@ -478,18 +461,18 @@ void screens::diversity(uint8_t diversity_mode) {
 
     display.setTextColor(diversity_mode == useReceiverA ? BLACK : WHITE);
     display.setCursor(5,10*2+3);
-    display.print(PSTR2("RECEIVER A"));
+    display.print(PSTR2("RECEIVER Left"));
     display.setTextColor(diversity_mode == useReceiverB ? BLACK : WHITE);
     display.setCursor(5,10*3+3);
-    display.print(PSTR2("RECEIVER B"));
+    display.print(PSTR2("RECEIVER Right"));
 
     // RSSI Strength
     display.setTextColor(WHITE);
     display.drawRect(0, display.height()-21, display.width(), 11, WHITE);
     display.setCursor(5,display.height()-19);
-    display.print("A:");
+    display.print("L:");
     display.setCursor(5,display.height()-9);
-    display.print("B:");
+    display.print("R:");
     display.display();
 }
 
