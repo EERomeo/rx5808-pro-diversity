@@ -523,11 +523,11 @@ void loop()
             rssi = readRSSI();
 
 #ifdef USE_DIVERSITY
-            drawScreen.updateScreenSaver(active_receiver, rssi, readRSSI(useReceiverA), readRSSI(useReceiverB));
+            drawScreen.updateScreenSaver(active_receiver, rssi, readRSSI(useReceiverA), readRSSI(useReceiverB), readVoltage());
 
             if((readRSSI(useReceiverA) < RSSI_ALARM) && (readRSSI(useReceiverB) < RSSI_ALARM)) { beep(300); } //rssi buzzer alarm
 #else
-            drawScreen.updateScreenSaver(rssi);
+            drawScreen.updateScreenSaver(rssi, readVoltage());
 
             if(rssi < RSSI_ALARM) { beep(300); } //rssi buzzer alarm
 #endif
