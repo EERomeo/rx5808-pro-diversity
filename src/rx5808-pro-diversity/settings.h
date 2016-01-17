@@ -42,15 +42,15 @@ SOFTWARE.
 #define V_CAL 3.094         //Voltage calibration ((actual voltage/displayed voltage) * V_CAL)
 #define V_MIN 10.5          //Min Voltage alarm trigger
 #define NUM_SAMPLES 10      //voltage reading smoothing (do not change)
-#define RSSI_ALARM 1        //Min rssi alarm trigger (%) ! for diversity triggered if both rx's < alarm
+#define RSSI_ALARM 40        //Min rssi alarm trigger (%) ! for diversity triggered if both rx's < alarm
 
 #define voltagePin A2       //Voltage divider input pin
 
 // Feature Togglels
 #define USE_DIVERSITY
-#define USE_IR_EMITTER
+//#define USE_IR_EMITTER
 //#define USE_FLIP_SCREEN
-#define USE_BOOT_LOGO
+//#define USE_BOOT_LOGO
 
 // Receiver Module version
 // used for tuning time
@@ -123,7 +123,7 @@ SOFTWARE.
 #define STATE_SCREEN_SAVER 8
 
 // Seconds to wait before force entering screensaver
-#define SCREENSAVER_TIMEOUT 30
+#define SCREENSAVER_TIMEOUT 10
 
 #define START_STATE STATE_SEEK
 #define MAX_STATE STATE_MANUAL
@@ -158,7 +158,9 @@ SOFTWARE.
     #define EEPROM_ADR_RSSI_MIN_B_H 8
     #define EEPROM_ADR_RSSI_MAX_B_L 9
     #define EEPROM_ADR_RSSI_MAX_B_H 10
-
+    // used to figure out if diversity module has been plugged in.
+    // When RSSI is plugged in the min value is around 90
+    // When RSSI is not plugged in the min value is 0
     #define isDiversity() (analogRead(rssiPinB) >= 5)
 #endif
 
